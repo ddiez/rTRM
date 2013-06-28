@@ -1,0 +1,364 @@
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{rTRM}
+%\VignetteKeywords{rTRM, TRM}
+%\VignetteDepends{rTRM}
+%\VignetteDepends{igraph}
+%\VignetteDepends{knitr}
+%\VignetteDepends{org.Mm.eg.db}
+%\VignetteDepends{MotifDb}
+%\VignetteDepends{PWMEnrich}
+%\VignetteDepends{BSgenome.Mmusculus.UCSC.mm8}
+%\VignettePackage{rTRM}
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=3cm,rmargin=3cm}
+
+\begin{document}
+
+<<include=FALSE, cache=FALSE>>=
+library(knitr)
+library(rTRM)
+library(org.Mm.eg.db)
+
+opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE)
+options(replace.assign=TRUE,width = 80)
+knit_hooks$set(no.mar = function(before, options, envir) {
+    if (before) par(mar = rep(0,4))  # no margins.
+})
+@
+
+\title{rTRM: an R package for the identification of \\ transcription regulatory modules (TRMs)}
+
+\author{Diego Diez}
+
+\maketitle
+
+\section{Introduction}
+
+Transcription factors (TFs) bind to short motifs in the DNA and regulate the expression of target genes in a cell type and time dependent fashion. TFs do so by cooperating with other TFs in what it is called Transcriptional Regulatory Modules (TRMs). These TRMs contain different TFs and form a combinatorial code that explains TF specificity. We have implemented a method for the identification of TRMs that integrates information about binding locations from a single ChIP-seq experiment, computational estimation of TF binding, gene expression and protein-protein interaction (PPI) data (Diez et al. submitted; see workflow figure). rTRM implements the methods required for the integration of PPI information (step 4 in workflow). To do so, rTRM tries to identify TFs that are bound to a target TF (the one with experimental evidence- i.e. ChIP-seq data) either directly or through a bridge protein. This package has been used to identify cell-type independent and dependent TRMs associated with Stat3 functions \cite{hutchins2013}. Also, it has been used to identify TRMs in embryonic and hematopoietic stem cells as part of the publication presenting the methodology (Diez et al. submitted). Here we present the basic capabilities of rTRM with a naive example, a case study showing the identification of Sox2 related TRM in ESCs as performed in the paper describing rTRM (Diez et al. submitted), and a complete workflow in R using the PWMEnrich package for the motif enrichment step.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=.7]{workflow.pdf}
+\caption{Workflow for the identification of TRMs. Steps 1-3 can be performed with standard Bioconductor approaches. rTRM implements a method to perform step 4.}
+\end{figure}
+
+\section{Minimal example}
+
+In this minimal example a fake network is search to identify TRMs focused around a target node, \textit{N6}, with query nodes being \textit{N7}, \textit{N12} and \textit{N28}. By default \textit{findTRM} find nodes separated a max distance of 0 (i.e. nodes directly connected). We change this with parameter \textit{max.bridge = 1}. Because node \textit{N28} is separated by two other nodes from the target node \textit{N6}, it is not included in the predicted TRM. By default findTRM() returns an object of class igraph, which can be used with plotTRM(), plotTRMlegend() and other rTRM functions. However it is possible to directly obtain a graphNEL object (from the Bioconductor package graph), setting the type argument to "graphNEL". Of course it is possible to also use the igraph.to.graphNEL() function in the igraph package to transform an igraph object into a graphNEL object.
+
+<<fig.cap = "Identification of a TRM from a test network (left). In the resulting TRM (right) dark blue indicates the target node light blue are query nodes and white nodes are bridge nodes", no.mar = TRUE>>=
+# load the rTRM package
+library(rTRM)
+
+# load network example.
+load(system.file(package = "rTRM", "extra/example.rda"))
+
+# plot network
+plotGraph(g, vertex.cex = 5)
+
+# define target and query nodes:
+target = "N6"
+query = c("N7", "N12", "N28")
+
+# find TRM:
+s = findTRM(g, target = target, query = query, method = "nsa", max.bridge = 1)
+
+# annotate nodes:
+V(s)$color = "white"
+V(s)[ name %in% query]$color = "steelblue2"
+V(s)[ name %in% target]$color = "steelblue4"
+
+# plot:
+plotGraph(s, mar = 5, vertex.cex = 5)
+@
+
+\section{Introduction to the rTRM package}
+
+rTRM relies on a series of optimizations. For example in the publication we used PWMs for vertebrate species compiled from different sources. This assumes the binding specificities of TFs will be conserved on all these species. Recent comparison between mouse and human PWMs suggests that this is the case for most TFs \cite{jolma2013}. rTRM also relies on protein-protein interaction data, and so provides utilities to download data from the BioGRID database (see below). As some of these functionalities are further integrated with existing Bioconductor functionality they may be defunct in the future.
+
+\subsection{Database}
+
+Information about TFs, including Position Specific Weight (PWMs) matrices, mapping to Entrez Gene identifiers, orthologs in mouse and human and other annotations are stored as a SQLite database. rTRM provides a basic API for accessing the data. Below there are some examples.
+
+To obtain PWMs:
+<<>>=
+pwm = getMatrices()
+head(pwm, 1)
+@
+
+To get annotations:
+<<>>=
+ann = getAnnotations()
+head(ann)
+@
+
+To get map of TFs to genes:
+<<>>=
+map = getMaps()
+head(map)
+@
+
+To get map of TFs to ortholog genes:
+<<>>=
+o = getOrthologs(organism = "mouse")
+head(o)
+@
+
+There are utility functions to go from motif ids to entrezgene ids. Take a look at the use case for an example of how to do so.
+
+\subsection{Interactome data}
+
+rTRM requires information about protein-protein interactions (PPIs) for its predictions and includes interactome (PPI network) data from the BioGRID database \cite{stark2011}. Currently mouse and human interactomes are supported. The networks must be in \textit{igraph} format. To access the data use:
+
+<<>>=
+# check statistics about the network.
+biogrid_mm()
+# load mouse PPI network:
+data(biogrid_mm)
+@
+
+The amount of available PPI data increases rapidly so it is desirable to have a way to access the newest data conveniently. Here we included support for direct download and processing of PPI data from the BioGRID database. The PPI network is stored as an \textit{igraph} object that can be readily used with rTRM or stored for later use. PPI data from other databases could be used as long as it is formatted as an \textit{igraph} object with the 'name' attribute containing entrezgene identifiers and the 'label' attribute containing the symbol. Below there is an example of the BioGRID database update procedure.
+
+<<eval = FALSE>>=
+# obtain dataset (currently need to state the version number explicitly, see
+# http://www.thebiogrid.org to identify the latest version:
+db = getBiogridData("3.2.96")
+
+# process PPI data for different organisms (currently supported human and mouse):
+biogrid_hs = processBiogrid(db, org = "human")
+biogrid_mm = processBiogrid(db, org = "mouse")
+@
+
+
+\section{Case study: TRM associated with Sox2 in embryonic stem cells (ESCs)}
+
+In this case study we want to identify TRMs associated with the TF Sox2 in mouse embryonic stem cells (ESCs). Sox2 ChIP-seq data was obtained \cite{chen2008} and motif enrichment analysis performed with HOMER \cite{heinz2010}, followed by matching against our library of PWMs using TOMTOM \cite{gupta2007}. The starting dataset is the TOMTOM output file with the motifs enriched in the Sox2 binding regions.
+
+<<>>=
+#library(org.Mm.eg.db)
+
+# read motif enrichment results.
+motif_file = system.file("extra/sox2_motif_list.rda", package = "rTRM")
+load(motif_file)
+length(motif_list)
+head(motif_list)
+@
+
+Once we read the motifs, we want to convert them into genes, i.e. the corresponding Entrez Gene identifier. To do this we use the function \textbf{getOrthologFromMatrix}, which takes a list of motif identifiers and the target organism as parameters. The function returns a list with the Entrez Gene ids by cluster.
+
+<<>>=
+# get the corresponding gene.
+tfs_list = getOrthologFromMatrix(motif_list, organism = "mouse")
+tfs_list = unique(unlist(tfs_list, use.names = FALSE))
+length(tfs_list)
+head(tfs_list)
+@
+
+Next, we load a list of genes expressed in ESC. This dataset was obtained from GEO (GSE27708; \cite{ho2011})  and processed using the custom CDFs from the BrainArray project \cite{dai2005} and the \textbf{rma} function from the package \textit{affy} \cite{gautier2004}.
+
+<<>>=
+# load expression data.
+eg_esc_file = system.file("extra/ESC-expressed.txt", package = "rTRM")
+eg_esc = scan(eg_esc_file, what = "")
+length(eg_esc)
+head(eg_esc)
+
+tfs_list_esc = tfs_list[tfs_list %in% eg_esc]
+length(tfs_list_esc)
+head(tfs_list_esc)
+@
+
+Now we load the PPI network and filter out potential degree outliers and proteins not expressed in the paired expression data.
+<<>>=
+# load and process PPI data.
+biogrid_mm()
+data(biogrid_mm)
+ppi = biogrid_mm
+vcount(ppi)
+ecount(ppi)
+
+# remove outliers.
+f = c("Ubc", "Sumo1", "Sumo2", "Sumo3")
+f = unlist(mget(f, revmap(org.Mm.egSYMBOL)))
+ppi = removeVertices(ppi, f)
+vcount(ppi)
+ecount(ppi)
+
+# filter by expression.
+ppi_esc = induced.subgraph(ppi, V(ppi)[ name %in% eg_esc ])
+vcount(ppi_esc)
+ecount(ppi_esc)
+
+# ensure a single component.
+ppi_esc = getLargestComp(ppi_esc)
+vcount(ppi_esc)
+ecount(ppi_esc)
+@
+
+To identify TRMs we define a target TF (the one the ChIP-seq data comes from) and some query TFs (the ones with enriched binding sites in the neighborhood of the target TF).
+
+<<>>=
+# define target.
+target = unlist(mget("Sox2", org.Mm.egSYMBOL2EG))
+target
+
+# find TRM.
+s = findTRM(ppi_esc, target, tfs_list_esc, method = "nsa", max.bridge = 1)
+vcount(s)
+ecount(s)
+@
+
+Finally we layout the network using a customized concentric layout and plot the network and the legend.
+<<fig.cap = "Sox2 specific TRM in ESCs.">>=
+# generate layout (order by cluster, then label)
+cl = getConcentricList(s, target, tfs_list_esc)
+l = layout.concentric(s, cl, order = "label")
+
+# plot TRM.
+plotTRM(s, layout = l, vertex.cex = 15, label.cex = .8)
+plotTRMlegend(s, title = "ESC Sox2 TRM", cex = .8)
+@
+
+
+\section{A complete workflow in R}
+
+In this section we will show a complete workflow in R using the MotifDb and PWMEnrich packages for looking for motif enrichment. PWMEnrich requires the computation of background models and the enrichment analysis \emph{per se}, which are computational intensive. Therefore these steps were not run during the compilation of this vignette.
+
+The first step is to retrieve a set of PWMs. Here we will use the MotifDb package available in Bioconductor. We will use only mouse PWMs (i.e. PWMs for the target organism). If you want to use matrices for other species then you have to compute the orthologs in the target organisms (e.g. using getOrthologsFromBiomart() in rTRM or directly the Biomart package).
+
+<<>>=
+library(rTRM)
+library(BSgenome.Mmusculus.UCSC.mm8) # Sox2 peaks found against mm8
+library(PWMEnrich)
+registerCoresPWMEnrich(1) # register number of cores for parallelization in PWMEnrich
+library(MotifDb)
+
+# select mouse PWMs:
+sel.mm = values(MotifDb)$organism %in% c("Mmusculus")
+pwm.mm = MotifDb[sel.mm]
+@
+
+The matrices need to be passed as counts, that is the PFM need to be converted to counts. The easiest way is to multiply by 1000 and round the results. We also need to convert it to integer.
+
+<<>>=
+# generate logn background model of PWMs:
+p = as.list(pwm.mm)
+p = lapply(p, function(x) round(x * 1000))
+p = lapply(p, function(x) t(apply(x, 1, as.integer)))
+@
+
+With the PFMs we compute the background model using the makeBackground() function from the PWMEnrich package. This requires a list with the PFMs as counts, the organisms to obtain the sequences to compute the background and the type of background model (here "logn" model is used).
+
+<<eval=FALSE>>=
+pwm_logn = makeBackground(p, Mmusculus, type = "logn")
+@
+<<echo=FALSE>>=
+load(system.file("extra/pwm_mm_logn.rda", package = "rTRM"))
+@
+
+Next we read the peak information from the Sox2 Chip-seq data. This is the original coordinates obtained from Chen et al. (Cell 2008), which were obtained for Mmusculus mm8 genome. The function getSequencesFromGenome() is an utility wrapper to getSeq() that facilitates appending a label to the sequences' ids. PWMEnrich requires sequences the same size or longer to the motifs so we check what is the largest motif and filter the sequences accordingly.
+
+<<>>=
+sox2_bed = read.table(system.file("extra/ESC_Sox2_peaks.txt", package = "rTRM"))
+
+colnames(sox2_bed) = c("chr", "start", "end")
+
+sox2_seq = getSequencesFromGenome(sox2_bed, Mmusculus, append.id="Sox2")
+# PWMEnrich throws an error if the sequences are shorter than the motifs so we filter those sequences.
+min.width = max(sapply(p, ncol))
+sox2_seq_filter = sox2_seq[width(sox2_seq) >= min.width]
+@
+
+Finally we compute the enrichment with the sequences and the PFMs with the background model as parameters.
+
+<<eval=FALSE>>=
+# find enrichment:
+sox2_enr = motifEnrichment(sox2_seq_filter, pwms=pwm_logn, group.only=TRUE)
+@
+
+<<echo=FALSE>>=
+load(system.file("extra/sox2_enr.rda", package = "rTRM"))
+@
+
+We retrieve the enriched motifs and obtain the Entrezgene ids. Then proceed with the same steps as in the Use Case example shown before. The resulting TRM looks very similar to the one in the Use Case. The main difference is the absence of Klf4 and the presence of Tcf7l1. A possibility could be that different matrices were used during the enrichment analysis since our approach uses compiled vertebrate PWMs that are mapped to the target species (Diez et al. submitted). However in this case there is a mouse PWM for Klf4 in MotifDb. The reason for this discrepacy is in the different approaches used for motif enrichment. Whereas HOMER, which was used to obtain the list of enriched motifs in the Use Case, uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background, PWMEnrich uses 2000 bp upstream of the promoter of all genes in the genome.
+
+<<fig.cap="Sox2 TRM identified using PWMEnrich for the motif enrichment. In this TRM Klf4 is missing but Tcf7l1 is added to the list of enriched motifs">>=
+res = motifRankingForGroup(sox2_enr)
+res.gene = unique(values(MotifDb[names(res[res < 0.05])])$geneId)
+res.gene = res.gene[!is.na(res.gene)]
+
+data(biogrid_mm)
+ppi = biogrid_mm
+vcount(ppi)
+ecount(ppi)
+
+f = c("Ubc", "Sumo1", "Sumo2", "Sumo3")
+f = unlist(mget(f, revmap(org.Mm.egSYMBOL)))
+ppi = removeVertices(ppi, f)
+vcount(ppi)
+ecount(ppi)
+
+# filter by expression.
+eg_esc = scan(system.file("extra/ESC-expressed.txt", package = "rTRM"), what = "")
+ppi_esc = induced.subgraph(ppi, V(ppi)[ name %in% eg_esc ])
+vcount(ppi_esc)
+ecount(ppi_esc)
+
+# ensure a single component.
+ppi_esc = getLargestComp(ppi_esc)
+vcount(ppi_esc)
+ecount(ppi_esc)
+
+sox2.gene = unlist(mget("Sox2", org.Mm.egSYMBOL2EG))
+sox2_trm = findTRM(ppi_esc, target=sox2.gene, query = res.gene)
+
+cl = getConcentricList(sox2_trm, t=sox2.gene,e=res.gene)
+l = layout.concentric(sox2_trm, concentric=cl, order="label")
+plotTRM(sox2_trm, layout = l, vertex.cex = 15, label.cex = .8)
+plotTRMlegend(sox2_trm, title = "ESC Sox2 TRM", cex = .8)
+@
+
+\section{Citation}
+
+If you use \textit{rTRM} in your research please include the following reference:
+
+<<>>=
+citation(package="rTRM")
+@
+
+\section{Session Information}
+
+<<>>=
+sessionInfo()
+@
+
+\begin{thebibliography}{9}
+
+\bibitem{hutchins2013} Hutchins, A. P., D. Diez, et al. (2013). "Distinct transcriptional regulatory modules underlie STAT3's cell type-independent and cell type-specific functions." Nucleic Acids Res.
+
+\bibitem{stark2011} Stark, C., B. J. Breitkreutz, et al. (2011). "The BioGRID Interaction Database: 2011 update." Nucleic Acids Res 39(Database issue): D698-704.
+
+\bibitem{chen2008} Chen, X., H. Xu, et al. (2008). "Integration of external signaling pathways with the core transcriptional network in embryonic stem cells." Cell 133(6): 1106-1117.
+
+\bibitem{heinz2010} Heinz, S., C. Benner, et al. (2010). "Simple combinations of lineage-determining transcription factors prime cis-regulatory elements required for macrophage and B cell identities." Mol Cell 38(4): 576-589.
+
+\bibitem{gupta2007} Gupta, S., J. A. Stamatoyannopoulos, et al. (2007). "Quantifying similarity between motifs." Genome Biol 8(2): R24.
+
+\bibitem{ho2011} Ho, L., E. L. Miller, et al. (2011). "esBAF facilitates pluripotency by conditioning the genome for LIF/STAT3 signalling and by regulating polycomb function." Nat Cell Biol 13(8): 903-913.
+
+\bibitem{dai2005} Dai, M., P. Wang, et al. (2005). "Evolving gene/transcript definitions significantly alter the interpretation of GeneChip data." Nucleic Acids Res 33(20): e175.
+
+\bibitem{gautier2004} Gautier, L., L. Cope, et al. (2004). "affy--analysis of Affymetrix GeneChip data at the probe level." Bioinformatics 20(3): 307-315.
+
+\bibitem{jolma2013} Jolma, A., Yan, J., Whitington, T., Toivonen, J., Nitta, K. R., Rastas, P., et al. (2013). DNA-Binding Specificities of Human Transcription Factors. Cell, 152(1-2), 327–339.
+
+%\bibitem{durinck2009} Durinck, S., P. T. Spellman, et al. (2009). "Mapping identifiers for the integration of genomic datasets with the R/Bioconductor package biomaRt." Nat Protoc 4(8): 1184-1191.
+
+
+\end{thebibliography}
+
+\end{document}

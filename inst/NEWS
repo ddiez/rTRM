@@ -1,0 +1,10 @@
+Package: rTRM
+=============
+
+Version: 0.8
+
+o Updated database including SELEX (Jolma 2010 Genome Research, Jolma 2013 Cell) and all Uniprobe (for all existing mouse and human matrices) PWMs.
+
+Version: 0.1
+
+o Initial packaging.
