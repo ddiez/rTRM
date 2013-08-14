@@ -99,3 +99,62 @@ getConcentricList = function(g, t, e, max.size = 60, order.by = "label") {
 	}
 	res
 }
+
+layout.arc = function (g, target, query)
+{
+  n = vcount(g)
+  if(! all(target %in% V(g)$name)) {
+    warning("some targets not in graph, removing them.")
+    target=target[target %in% V(g)$name]
+  }
+  
+  #
+  target = target[target %in% query]
+  
+  V(g)$type = "bridge"
+  V(g)[name %in% query]$type = "query"
+  V(g)[name %in% target]$type = "target"
+  
+  g_con = g
+  n_left = character()
+  
+  if(! is.connected(g)) {
+    g_con = getLargestComp(g)
+    n_left = setdiff(V(g)$name,V(g_con)$name)
+  }
+  
+  set = list(target = target, bridge=V(g_con)[type == "bridge"]$name, query1 = character(), query2 = character(), query3 = character(), left=n_left)
+  for(q in V(g_con)[type == "query"]$name) {
+    sp = get.all.shortest.paths(g_con,from=V(g_con)[q],to=V(g_con)[name %in% target])
+    print(sp)
+    sp_min = min(sapply(sp$res,length))
+    print(sp_min)
+    if(sp_min == 2) {
+      set$query1 = c(set$query1, V(g_con)[q]$name)
+    }
+    else set$query2 = c(set$query2, V(g_con)[q]$name)
+  }
+  
+  set = lapply(set,function(s) {
+    ns = V(g)[s]$label
+    s[order(ns,decreasing=TRUE)]
+  })
+  
+  x0 = c(left=-2,query1=-1,target=0,bridge=1,query2=2)
+  y0 = sapply(set,function(x){
+    -1 * floor(length(x)/2)
+  })
+  
+  res = matrix(NA, nrow = n, ncol = 2)
+  all_n = unlist(set)
+  for(my_n in all_n) {
+    k = which(V(g)$name == my_n)
+    my_type = names(set)[sapply(set,function(x) my_n %in% x)]
+    x1 = x0[my_type]
+    y1 = y0[my_type]
+    y0[my_type] = y0[my_type] + 1
+    res[k,1] = x1
+    res[k,2] = y1
+  }
+  res
+}

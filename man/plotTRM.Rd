@@ -8,7 +8,7 @@ Plot an annotated TRM.
 This function plots the output findTRM() after it has been annotated with cluster information with annotateTRM() function. Cluster membership is plotted using a pie plot.
 }
 \usage{
-plotTRM(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col, vertex.cex, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.cex, label.col, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE)
+plotTRM(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col, vertex.cex, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.cex, label.col, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE, normalize.layout = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,6 +30,7 @@ plotTRM(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col, vertex.ce
   \item{label.pos}{label position.}
   \item{label.offset}{label offset.}
   \item{adjust.label.col}{whether to automatically adjust label color depending on the luminance of the node's color.}
+  \item{normalize.layout}{whether to apply layout.norm (with limits xmin=-1, xmax=1, ymin=-1, ymax=1) to the layout.}
 }
 
 \author{

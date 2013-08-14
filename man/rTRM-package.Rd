@@ -6,10 +6,7 @@
 	Identification transcription regulatory modules (TRMs)
 }
 \description{
-	This package integrates transcription factor binding, enrichment analysis,
-	gene expression, functional information  and protein-protein interaction
-	data, and identifies transcription factor modules (TFM) that regulate
-	cellular responses.
+	This package identifies transcriptional regulatory modules (TRMs) from PPI networks.
 }
 \details{
 \tabular{ll}{

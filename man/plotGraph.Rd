@@ -8,7 +8,7 @@ Plot an graph in igraph format.
 This function plots graphs of the class igraph.
 }
 \usage{
-plotGraph(g, layout = layout.fruchterman.reingold, mar = .5, vertex.pch = 21, vertex.cex, vertex.col, vertex.bg, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.col, label.cex, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE)
+plotGraph(g, layout = layout.fruchterman.reingold, mar = .5, vertex.pch = 21, vertex.cex, vertex.col, vertex.bg, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.col, label.cex, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE, normalize.layout = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -33,9 +33,8 @@ plotGraph(g, layout = layout.fruchterman.reingold, mar = .5, vertex.pch = 21, ve
   \item{label.offset}{label offset.}
   
   \item{adjust.label.col}{
-whether to automatically adjust label color depending on the luminance of the node's color/s.
-
-}
+whether to automatically adjust label color depending on the luminance of the node's color/s.}
+  \item{normalize.layout}{whether to apply layout.norm (with limits xmin=-1, xmax=1, ymin=-1, ymax=1) to the layout.}
 }
 
 \author{

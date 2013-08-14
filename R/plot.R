@@ -137,7 +137,7 @@ annotateTRM = function(g, target) {
     default
 }
 
-plotTRM = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col, vertex.cex, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.cex, label.col, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE) {
+plotTRM = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col, vertex.cex, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.cex, label.col, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE, normalizr.layout=TRUE) {
   
   if(class(layout) == "function")
     l = layout(g)
@@ -145,7 +145,8 @@ plotTRM = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col
     l = layout
 
   # normalize layout.
-  l = layout.norm(l, -1, 1, -1, 1)
+  if(normalize.layout)
+    l = layout.norm(l, -1, 1, -1, 1)
   
   vertex.col = .checkParam(vertex.col, V(g)$frame.color, "black", multi = vcount(g))
   vertex.cex = .checkParam(vertex.cex, V(g)$size, 10, multi = vcount(g))
@@ -238,14 +239,15 @@ plotTRMlegend = function (x, title = NULL, cex = 1)
     symbols(xpos, ypos, circles = radius, inches = FALSE, add = TRUE, fg = frame.color, lwd = frame.width)
 }
 
-plotGraph = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.pch = 21, vertex.cex, vertex.col, vertex.bg, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.col, label.cex, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE) { 
+plotGraph = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.pch = 21, vertex.cex, vertex.col, vertex.bg, vertex.lwd, edge.col, edge.lwd, edge.lty, label = TRUE, label.col, label.cex, label.pos = NULL, label.offset = 1.5, adjust.label.col = FALSE, normalize.layout=TRUE) { 
   if(class(layout) == "function")
     l = layout(g)
   else
     l = layout
   
   # normalize layout.
-  l = layout.norm(l, -1, 1, -1, 1)
+  if(normalize.layout)
+    l = layout.norm(l, -1, 1, -1, 1)
   
   vertex.cex = .checkParam(vertex.cex, V(g)$size, 5)
   vertex.col = .checkParam(vertex.col, V(g)$frame.color, "grey")
