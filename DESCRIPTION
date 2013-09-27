@@ -1,8 +1,8 @@
 Package: rTRM
 Type: Package
 Title: Identification of transcriptional regulatory modules from PPI networks
-Version: 0.99.1
-Date: 2013-08-14
+Version: 0.99.2
+Date: 2013-09-27
 Author: Diego Diez
 Depends: R (>= 2.10), igraph, RSQLite
 Suggests: RUnit, BiocGenerics, MotifDb, graph, PWMEnrich, biomaRt, knitr, Biostrings, BSgenome.Mmusculus.UCSC.mm8, org.Mm.eg.db, AnnotationDbi, annotate
