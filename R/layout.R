@@ -112,8 +112,9 @@ layout.arc = function (g, target, query)
   target = target[target %in% query]
   
   V(g)$type = "bridge"
-  V(g)[name %in% query]$type = "query"
-  V(g)[name %in% target]$type = "target"
+  all_name=V(g)$name # could be V(g)[ name %in% query ] but want to avoid "note's" in R CMD check.
+  V(g)[all_name %in% query]$type = "query"
+  V(g)[all_name %in% target]$type = "target"
   
   g_con = g
   n_left = character()
@@ -123,9 +124,11 @@ layout.arc = function (g, target, query)
     n_left = setdiff(V(g)$name,V(g_con)$name)
   }
   
-  set = list(target = target, bridge=V(g_con)[type == "bridge"]$name, query1 = character(), query2 = character(), query3 = character(), left=n_left)
-  for(q in V(g_con)[type == "query"]$name) {
-    sp = get.all.shortest.paths(g_con,from=V(g_con)[q],to=V(g_con)[name %in% target])
+  all_type=V(g_con)$type
+  all_name=V(g_con)$name
+  set = list(target = target, bridge=V(g_con)[all_type == "bridge"]$name, query1 = character(), query2 = character(), query3 = character(), left=n_left)
+  for(q in V(g_con)[all_type == "query"]$name) {
+    sp = get.all.shortest.paths(g_con,from=V(g_con)[q],to=V(g_con)[all_name %in% target])
     #print(sp)
     sp_min = min(sapply(sp$res,length))
     #print(sp_min)
