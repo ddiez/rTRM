@@ -220,7 +220,7 @@ vcount(s)
 ecount(s)
 @
 
-Finally we layout the network using a customized concentric layout and plot the network and the legend.
+Finally, we layout the network using a customized concentric layout and plot the network and the legend.
 <<fig.cap = "Sox2 specific TRM in ESCs.">>=
 # generate layout (order by cluster, then label)
 cl = getConcentricList(s, target, tfs_list_esc)
