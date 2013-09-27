@@ -42,7 +42,7 @@ Transcription factors (TFs) bind to short motifs in the DNA and regulate the exp
 
 \begin{figure}[htb]
 \centering
-\includegraphics[scale=.7]{workflow.pdf}
+\includegraphics[scale=.8]{workflow.pdf}
 \caption{Workflow for the identification of TRMs. Steps 1-3 can be performed with standard Bioconductor approaches. rTRM implements a method to perform step 4.}
 \end{figure}
 
@@ -108,11 +108,17 @@ o = getOrthologs(organism = "mouse")
 head(o)
 @
 
-There are utility functions to go from motif ids to entrezgene ids. Take a look at the use case for an example of how to do so.
+It is possible to map motif ids to entrezgene ids in the target organism (only between human and mouse). This is useful when all the information about existing PWMs is desired, as some TF binding affinities have only been studied in one organism.
+
+<<>>=
+getOrthologFromMatrix("MA0009.1", organism="human")
+getOrthologFromMatrix("MA0009.1", organism="mouse")
+@
+
 
 \subsection{Interactome data}
 
-rTRM requires information about protein-protein interactions (PPIs) for its predictions and includes interactome (PPI network) data from the BioGRID database \cite{stark2011}. Currently mouse and human interactomes are supported. The networks must be in \textit{igraph} format. To access the data use:
+rTRM requires information about protein-protein interactions (PPIs) for its predictions and includes interactome (PPI network) data from the BioGRID database \cite{stark2011}. Currently mouse and human interactomes are supported. The networks are provided as \textit{igraph} format. To access the data use:
 
 <<>>=
 # check statistics about the network.
@@ -121,7 +127,7 @@ biogrid_mm()
 data(biogrid_mm)
 @
 
-The amount of available PPI data increases rapidly so it is desirable to have a way to access the newest data conveniently. Here we included support for direct download and processing of PPI data from the BioGRID database. The PPI network is stored as an \textit{igraph} object that can be readily used with rTRM or stored for later use. PPI data from other databases could be used as long as it is formatted as an \textit{igraph} object with the 'name' attribute containing entrezgene identifiers and the 'label' attribute containing the symbol. Below there is an example of the BioGRID database update procedure.
+The amount of available PPI data increases rapidly so it is desirable to have a way to access the newest data conveniently. rTRM includes support for direct download and processing of PPI data from the BioGRID database. The PPI network is stored as an \textit{igraph} object that can be readily used with rTRM or stored for later use. Below there is an example of the BioGRID database update procedure.
 
 <<eval = FALSE>>=
 # obtain dataset (currently need to state the version number explicitly, see
@@ -133,10 +139,12 @@ biogrid_hs = processBiogrid(db, org = "human")
 biogrid_mm = processBiogrid(db, org = "mouse")
 @
 
+PPI data from other databases could be used as long as it is formatted as an \textit{igraph} object with the 'name' attribute containing entrezgene identifiers and the 'label' attribute containing the symbol.
+
 
 \section{Case study: TRM associated with Sox2 in embryonic stem cells (ESCs)}
 
-In this case study we want to identify TRMs associated with the TF Sox2 in mouse embryonic stem cells (ESCs). Sox2 ChIP-seq data was obtained \cite{chen2008} and motif enrichment analysis performed with HOMER \cite{heinz2010}, followed by matching against our library of PWMs using TOMTOM \cite{gupta2007}. The starting dataset is the TOMTOM output file with the motifs enriched in the Sox2 binding regions.
+Sox2 is a TF involved in the determination and maintainance of pluripotency in embryonic stem cells (ESCs). It is known that Sox2 works together with Nanog and Pou5f1 (Oct4). Other TFs important are Erssb, and Klf4. In this case study we want to identify TRMs associated with Sox2. ChIP-seq data for Sox2 was obtained from Chen et al. (Cell 2008) \cite{chen2008} and motif enrichment analysis performed with HOMER \cite{heinz2010}, followed by matching against our library of PWMs using TOMTOM \cite{gupta2007}. The starting dataset is the TOMTOM output file with the motifs enriched in the Sox2 binding regions.
 
 <<>>=
 #library(org.Mm.eg.db)
@@ -148,7 +156,7 @@ length(motif_list)
 head(motif_list)
 @
 
-Once we read the motifs, we want to convert them into genes, i.e. the corresponding Entrez Gene identifier. To do this we use the function \textbf{getOrthologFromMatrix}, which takes a list of motif identifiers and the target organism as parameters. The function returns a list with the Entrez Gene ids by cluster.
+First, we read the motifs and convert them into gene identifiers (i.e. Entrez Gene identifier). To do this we use the function \textbf{getOrthologFromMatrix}, which takes a list of motif identifiers and the target organism as parameters. The function returns a list with the Entrez Gene ids.
 
 <<>>=
 # get the corresponding gene.
@@ -158,7 +166,7 @@ length(tfs_list)
 head(tfs_list)
 @
 
-Next, we load a list of genes expressed in ESC. This dataset was obtained from GEO (GSE27708; \cite{ho2011})  and processed using the custom CDFs from the BrainArray project \cite{dai2005} and the \textbf{rma} function from the package \textit{affy} \cite{gautier2004}.
+Next, we need a list of genes expressed in ESC. For this, the dataset was obtained from GEO (GSE27708; \cite{ho2011})  and processed using the custom CDFs from the BrainArray project \cite{dai2005} and the \textbf{rma} function from the package \textit{affy} \cite{gautier2004}. Genes expressed were determined by removing all genes with log2 expression < 5 in all samples.
 
 <<>>=
 # load expression data.
@@ -172,7 +180,7 @@ length(tfs_list_esc)
 head(tfs_list_esc)
 @
 
-Now we load the PPI network and filter out potential degree outliers and proteins not expressed in the paired expression data.
+Next, we load the PPI network and filter out potential degree outliers and proteins not expressed in the paired expression data.
 <<>>=
 # load and process PPI data.
 biogrid_mm()
@@ -226,9 +234,9 @@ plotTRMlegend(s, title = "ESC Sox2 TRM", cex = .8)
 
 \section{A complete workflow in R}
 
-In this section we will show a complete workflow in R using the MotifDb and PWMEnrich packages for looking for motif enrichment. PWMEnrich requires the computation of background models and the enrichment analysis \emph{per se}, which are computational intensive. Therefore these steps were not run during the compilation of this vignette.
+In this section we will identify Sox2 TRMs using a workflow performed completely in R. For this the MotifDb package will be used to obtain the information about PWMs, and PWMEnrich package for identifying enriched motifs. PWMEnrich requires the computation of background models and the enrichment analysis \emph{per se}, which are computational intensive. Therefore these steps were not run during the compilation of this vignette.
 
-The first step is to retrieve a set of PWMs. Here we will use the MotifDb package available in Bioconductor. We will use only mouse PWMs (i.e. PWMs for the target organism). If you want to use matrices for other species then you have to compute the orthologs in the target organisms (e.g. using getOrthologsFromBiomart() in rTRM or directly the Biomart package).
+The first step is to retrieve a set of PWMs. Here we will use the MotifDb package available in Bioconductor. We will use only mouse PWMs (i.e. PWMs for the target organism). It could be possible to use matrices from other species but then the user has to obtain the orthologs in the target organism (e.g. using getOrthologsFromBiomart() in rTRM or using the Biomart package directly).
 
 <<>>=
 library(rTRM)
@@ -242,16 +250,16 @@ sel.mm = values(MotifDb)$organism %in% c("Mmusculus")
 pwm.mm = MotifDb[sel.mm]
 @
 
-The matrices need to be passed as counts, that is the PFM need to be converted to counts. The easiest way is to multiply by 1000 and round the results. We also need to convert it to integer.
+The matrices need to be passed as counts, that is the PFM need to be converted to counts. The easiest way is to multiply by 100 and round the results. We also need to convert it to integer.
 
 <<>>=
 # generate logn background model of PWMs:
 p = as.list(pwm.mm)
-p = lapply(p, function(x) round(x * 1000))
+p = lapply(p, function(x) round(x * 100))
 p = lapply(p, function(x) t(apply(x, 1, as.integer)))
 @
 
-With the PFMs we compute the background model using the makeBackground() function from the PWMEnrich package. This requires a list with the PFMs as counts, the organisms to obtain the sequences to compute the background and the type of background model (here "logn" model is used).
+With the PFMs we compute the background model using the makeBackground() function from the PWMEnrich package, which returns the corresponding PWMs. This requires a list with the PFMs as counts, the organisms to obtain the sequences to compute the background and the type of background model (here "logn" model is used).
 
 <<eval=FALSE>>=
 pwm_logn = makeBackground(p, Mmusculus, type = "logn")
@@ -273,7 +281,7 @@ min.width = max(sapply(p, ncol))
 sox2_seq_filter = sox2_seq[width(sox2_seq) >= min.width]
 @
 
-Finally we compute the enrichment with the sequences and the PFMs with the background model as parameters.
+Next, enrichment is computed with the sequences and the PWMs with the background model as parameters.
 
 <<eval=FALSE>>=
 # find enrichment:
@@ -284,7 +292,7 @@ sox2_enr = motifEnrichment(sox2_seq_filter, pwms=pwm_logn, group.only=TRUE)
 load(system.file("extra/sox2_enr.rda", package = "rTRM"))
 @
 
-We retrieve the enriched motifs and obtain the Entrezgene ids. Then proceed with the same steps as in the Use Case example shown before. The resulting TRM looks very similar to the one in the Use Case. The main difference is the absence of Klf4 and the presence of Tcf7l1. A possibility could be that different matrices were used during the enrichment analysis since our approach uses compiled vertebrate PWMs that are mapped to the target species (Diez et al. submitted). However in this case there is a mouse PWM for Klf4 in MotifDb. The reason for this discrepacy is in the different approaches used for motif enrichment. Whereas HOMER, which was used to obtain the list of enriched motifs in the Use Case, uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background, PWMEnrich uses 2000 bp upstream of the promoter of all genes in the genome.
+Next, retrieve the enriched motifs and obtain the Entrezgene ids. Then proceed with the same steps as in the Use Case example shown in the previous section. The resulting TRM looks very similar to the one in the Use Case. The main difference is the absence of Klf4 and the presence of Tcf7l1. A possibility could be that different matrices were used during the enrichment analysis since our approach uses compiled vertebrate PWMs that are mapped to the target species (Diez et al. NAR 2013). However in this case there is a mouse PWM for Klf4 in MotifDb. The reason for this discrepacy is in the different approaches used for motif enrichment. Whereas HOMER, which was used to obtain the list of enriched motifs in the Use Case, uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background, PWMEnrich uses 2000 bp upstream of the promoter of all genes in the genome. Generally, using different strategies for enrichment will tend to produce slightly different TRMs.
 
 <<fig.cap="Sox2 TRM identified using PWMEnrich for the motif enrichment. In this TRM Klf4 is missing but Tcf7l1 is added to the list of enriched motifs">>=
 res = motifRankingForGroup(sox2_enr)
@@ -320,6 +328,16 @@ cl = getConcentricList(sox2_trm, t=sox2.gene,e=res.gene)
 l = layout.concentric(sox2_trm, concentric=cl, order="label")
 plotTRM(sox2_trm, layout = l, vertex.cex = 15, label.cex = .8)
 plotTRMlegend(sox2_trm, title = "ESC Sox2 TRM", cex = .8)
+@
+
+\section{Ploting parameters}
+
+The most important parameter determining the appearance of your network will be the layout. When networks contain many nodes and edges are difficult to interpret. rTRM implements two igraph layouts that try improve the visualization and interpretation of the identified TRMs. The layout \emph{layout.concentric} is a circular layout with multiple concentric layers that places the target TFs in the center, the enriched (or query) TFs in the outer circle and the bridge TFs in the middle circle. Another layut is \emph{layout.arc} that tries to mimic the layout presented in the rTRM description (Fig. 1). In this case all nodes are plotted in a liner layout, with the targets in the center, and the enriched (query) nodes at each side. Those enriched nodes connected directly to any of the target nodes are placed in the left side. Those connected through a bridge node are placed in the right side, with the bridge node placed in between. The following figure compares the concentric layout obtained in the previous section with a layout using the \emph{layout.arc} function.
+
+<<fig.width=2.5,fig.height=2.5,fig.cap="Sox2 TRM obtained with PWMEnrich workflow and layout.concentric is shown in the left. Same TRM with layout.arc is shown in the right.">>=
+plotTRM(sox2_trm, layout = l, vertex.cex = 15, label.cex = .7)
+l=layout.arc(sox2_trm,target=sox2.gene,query=res.gene)
+plotTRM(sox2_trm, layout=l,vertex.cex=15,label.cex=.7)
 @
 
 \section{Citation}
