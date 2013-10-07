@@ -1,10 +1,10 @@
 Package: rTRM
 =============
 
-Version: 0.8
+Version: 1.0
 
-o Updated database including SELEX (Jolma 2010 Genome Research, Jolma 2013 Cell) and all Uniprobe (for all existing mouse and human matrices) PWMs.
+o First release in Bioconductor.
 
-Version: 0.1
+o Integration with Bioconductor packages: MotifDb and PWMEnrich, graph (limited).
 
-o Initial packaging.
+o Human and mouse BioGRID datasets updated to version 3.2.105 (October 2013).
