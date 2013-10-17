@@ -143,7 +143,7 @@ PPI data from other databases could be used as long as it is formatted as an \te
 
 \subsubsection{Using PSICQUIC package to obtain protein-protein interactions}
 
-One possibility available from Bioconductor 2.13 is to use the package PSIQUIC to obtain PPI data. PSICQUIC provides access to different databases of PPIs, including BioGRID and STRINGS, and databases of cellular networks like KEGG or Reactome. For exaple, to obtain the human BioGRID data (not is named BioGrid at PSICQUIC):
+One possibility available from Bioconductor 2.13 is to use the package PSIQUIC to obtain PPI data. PSICQUIC provides access to different databases of PPIs, including BioGRID and STRINGS, and databases of cellular networks like KEGG or Reactome. For exaple, to obtain the human BioGRID data (note is named BioGrid at PSICQUIC):
 
 <<eval=FALSE>>=
 library(PSICQUIC)
