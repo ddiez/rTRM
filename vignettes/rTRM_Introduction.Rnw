@@ -141,6 +141,34 @@ biogrid_mm = processBiogrid(db, org = "mouse")
 
 PPI data from other databases could be used as long as it is formatted as an \textit{igraph} object with the 'name' attribute containing entrezgene identifiers and the 'label' attribute containing the symbol.
 
+\subsubsection{Using PSICQUIC package to obtain protein-protein interactions}
+
+One possibility available from Bioconductor 2.13 is to use the package PSIQUIC to obtain PPI data. PSICQUIC provides access to different databases of PPIs, including BioGRID and STRINGS, and databases of cellular networks like KEGG or Reactome. For exaple, to obtain the human BioGRID data (not is named BioGrid at PSICQUIC):
+
+<<eval=FALSE>>=
+library(PSICQUIC)
+psicquic <- PSICQUIC()
+providers(psicquic)
+
+# obtain BioGrid human PPIs (as data.frame):
+tbl = interactions(psicquic, species="9606",provider="BioGrid")
+
+# the target and source node information needs to be polished (i.e. must be Entrez gene id only)
+biogrid_hs = data.frame(source=tbl$A,target=tbl$B)
+biogrid_hs$source = sub(".*locuslink:(.*)\\|BIOGRID:.*","\\1", biogrid_hs$source)
+biogrid_hs$target = sub(".*locuslink:(.*)\\|BIOGRID:.*","\\1", biogrid_hs$target)
+
+# create graph.
+library(igraph)
+biogrid_hs=graph.data.frame(biogrid_hs,directed=FALSE)
+biogrid_hs=simplify(biogrid_hs)
+
+# annotate with symbols.
+library(org.Hs.eg.db)
+V(biogrid_hs)$label=select(org.Hs.eg.db,keys=V(biogrid_hs)$name,columns=c("SYMBOL"))$SYMBOL
+@
+
+Facilities will be added to automatically process the data from PSICQUIC to produce igraph objects suitable for rTRM.
 
 \section{Case study: TRM associated with Sox2 in embryonic stem cells (ESCs)}
 
