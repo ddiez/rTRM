@@ -1,5 +1,5 @@
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{rTRM}
+%\VignetteIndexEntry{Introduction to rTRM}
 %\VignetteKeywords{rTRM, TRM}
 %\VignetteDepends{rTRM}
 %\VignetteDepends{igraph}
