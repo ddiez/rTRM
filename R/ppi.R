@@ -17,7 +17,7 @@ getBiogridData = function(release) {
   }
   
   file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
-  url = paste("http://thebiogrid.org/downloads/archives/", dir, "/", file, ".zip", sep = "")  
+  url = paste("http://thebiogrid.org/downloads/archives/", dir, "/", file, ".zip", sep = "")
   
   download.file(url, destfile = tmp)
   if(release=="LATEST") {
@@ -38,7 +38,19 @@ getBiogridData = function(release) {
 # 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
 # 	unlink(tmp)
 # 	list(db = db, release = release, date = Sys.Date())
+=======
+>>>>>>> - fixes computation and assignment of biogrid_count edge attribute for simplified graphs.
 }
+
+# getBiogridData = function(release) {
+# 	tmp = tempfile()
+# 	file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
+# 	url = paste("http://thebiogrid.org/downloads/archives/Release%20Archive/BIOGRID-", release, "/", file, ".zip", sep = "")
+# 	download.file(url, destfile = tmp)
+# 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
+# 	unlink(tmp)
+# 	list(db = db, release = release, date = Sys.Date())
+#}
 
 processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physical", mimic.old = FALSE) {
   
