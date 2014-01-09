@@ -42,12 +42,22 @@ findTRM = function (g, target, query, method = "nsa", max.bridge = 1, extended =
 {
   type = match.arg(type, c("igraph", "graphNEL"))
   
-  if (any(! target %in% V(g)$name)) 
-      stop("target cannot be found in network!")
+  if (!any(target %in% V(g)$name))
+    stop("none of the target nodes can be found in the network!")
+  
+  if (!any(query %in% V(g)$name))
+    stop("none of the query nodes can be found in the network!")
+  
+  sel = target %in% V(g)$name
+  target = target[sel]
+  if (length(which(!sel)) > 0) 
+      message(length(which(!sel)), " target nodes NOT FOUND in network-- removed")
+  
   sel = query %in% V(g)$name
   query = query[sel]
   if (length(which(!sel)) > 0) 
-      message(length(which(!sel)), " genes NOT FOUND in network-- removed from query")
+    message(length(which(!sel)), " query nodes NOT FOUND in network-- removed")
+  
   switch(method, all = {
       m = g
   }, first = {
