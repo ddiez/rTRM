@@ -51,8 +51,10 @@ processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physic
   
   # create simplified graph.
   if (simplify) {
-    E(biogrid)$biogrid_count <- count.multiple(biogrid)
-    biogrid = simplify(biogrid)
+    #E(biogrid)$biogrid_count <- count.multiple(biogrid)
+    #biogrid = simplify(biogrid)
+    biogrid = igraph::simplify(biogrid,edge.attr.comb="concat")
+    E(biogrid)$biogrid_count=sapply(E(biogrid)$pubmed_id,function(x) length(x))
   }
   
   # print stats.
