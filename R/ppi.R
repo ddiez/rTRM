@@ -5,14 +5,39 @@
 	)
 }
 
+# NOTE: new implementation to allow automatic downloading of latest release.
 getBiogridData = function(release) {
-	tmp = tempfile()
-	file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
-	url = paste("http://thebiogrid.org/downloads/archives/Release%20Archive/BIOGRID-", release, "/", file, ".zip", sep = "")
-	download.file(url, destfile = tmp)
-	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
-	unlink(tmp)
-	list(db = db, release = release, date = Sys.Date())
+  tmp = tempfile()
+  
+  if(missing(release)) {
+    release = "LATEST"
+    dir = "Latest%20Release"
+  } else {
+    dir = paste("Release%20Archive/BIOGRID-", release, sep ="")
+  }
+  
+  file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
+  url = paste("http://thebiogrid.org/downloads/archives/", dir, "/", file, ".zip", sep = "")  
+  
+  download.file(url, destfile = tmp)
+  if(release=="LATEST") {
+    f=unzip(tmp,list=TRUE)
+    release=sub(".tab2.txt", "", sub("BIOGRID-ALL-", "", f$Name[1]))
+    file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
+  }
+  db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
+  unlink(tmp)
+  list(db = db, release = release, date = Sys.Date())
+}
+
+# getBiogridData = function(release) {
+# 	tmp = tempfile()
+# 	file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
+# 	url = paste("http://thebiogrid.org/downloads/archives/Release%20Archive/BIOGRID-", release, "/", file, ".zip", sep = "")
+# 	download.file(url, destfile = tmp)
+# 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
+# 	unlink(tmp)
+# 	list(db = db, release = release, date = Sys.Date())
 }
 
 processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physical", mimic.old = FALSE) {
