@@ -38,9 +38,7 @@ getBiogridData = function(release) {
 # 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
 # 	unlink(tmp)
 # 	list(db = db, release = release, date = Sys.Date())
-=======
->>>>>>> - fixes computation and assignment of biogrid_count edge attribute for simplified graphs.
-}
+#}
 
 # getBiogridData = function(release) {
 # 	tmp = tempfile()
