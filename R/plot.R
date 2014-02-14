@@ -105,7 +105,8 @@ plotDegree = function(g) {
   V(g)$family = family
   
   col = c("unclassified" = "white", .getTFclassColors())
-  V(g)$piecolor = lapply(V(g)$family, function(f) col[f])
+  V(g)$pie.color = lapply(V(g)$family, function(f) col[f])
+  V(g)$pie = lapply(V(g)$pie.color, function(f) rep(1,length(f)))
   g
 }
 
@@ -161,7 +162,7 @@ plotTRM = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col
   if (adjust.label.col) {
     col.range = range(.lum2(colors()))
     col.cut = round(diff(col.range)/2)
-    lum.mean = sapply(V(g)$piecolor, function(x) mean(.lum2(x)))
+    lum.mean = sapply(V(g)$pie.color, function(x) mean(.lum2(x)))
     label.col = ifelse(lum.mean < col.cut, "snow", "gray20")
   }
   
@@ -176,8 +177,9 @@ plotTRM = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.col
     lines(c(x1[1], x2[1]), c(x1[2], x2[2]), col = edge.col, lwd = edge.lwd[i], lty = edge.lty[i])
   }
   for(i in 1:nrow(l)) {
-    np = rep(1, length(V(g)[ i ]$piecolor))
-    .floating.pie(l[i,1], l[i,2], x = np, col = V(g)[ i ]$piecolor, radius=vertex.cex[i]/100, frame.width = vertex.lwd[i], frame.color = vertex.col[i])
+    np=V(g)$pie[[i]]
+    col=V(g)$pie.color[[i]]
+    .floating.pie(l[i,1], l[i,2], x=np, col=col, radius=vertex.cex[i]/100, frame.width=vertex.lwd[i], frame.color=vertex.col[i])
   }
   if(label) {
     ll = as.character(V(g))
@@ -218,7 +220,7 @@ plotTRMlegend = function (x, title = NULL, cex = 1)
   
   if (!is.null(col)) 
     col <- rep(col, length.out = nx)
-  
+    
   if (!is.null(lty)) 
     lty <- rep(lty, length.out = nx)
   
@@ -263,7 +265,7 @@ plotGraph = function(g, layout = layout.fruchterman.reingold, mar = .5, vertex.p
   if (adjust.label.col) {
     col.range = range(.lum2(colors()))
     col.cut = round(diff(col.range)/2)
-    lum.mean = sapply(V(g)$piecolor, function(x) mean(.lum2(x)))
+    lum.mean = sapply(V(g)$pie.color, function(x) mean(.lum2(x)))
     label.col = ifelse(lum.mean < col.cut, "snow", "gray20")
   }
   
