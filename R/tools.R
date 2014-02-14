@@ -39,8 +39,8 @@ getSimilarityMatrix = function(g_list, type = "nodes") {
 			i_g = g_list[[i_n]]
 			j_g = g_list[[j_n]]
 			if(!is.null(i_g) & !is.null(j_g)) {
-				gi = graph.intersection.by.name(i_g, j_g)
-				gu = graph.union.by.name(i_g, j_g)
+				gi = graph.intersection(i_g, j_g)
+				gu = graph.union(i_g, j_g)
 				switch(type, 
 							 nodes = {
 							 	t_n = vcount(gu)

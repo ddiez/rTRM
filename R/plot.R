@@ -320,14 +320,14 @@ annotateModule = function(g, enrich, trm, targets, ppi, exprs, tfs) {
 	}
 	
 	E(g)$lty = "dotted"
-	el = get.edgelist(graph.intersection.by.name(ppi, g))
+	el = get.edgelist(graph.intersection(ppi, g))
 	for(j in 1:nrow(el)) {
 		E(g, P = which(V(g)$name %in% el[j,]), directed = FALSE)$lty = "solid"
 	}
 	
 	E(g)$color = "grey"
 	E(g)$width = 1
-	el = get.edgelist(graph.intersection.by.name(trm, g))
+	el = get.edgelist(graph.intersection(trm, g))
 	for(j in 1:nrow(el)) {
 		E(g, P = which(V(g)$name %in% el[j,]), directed = FALSE)$color = "black"
 		#		E(g, P = which(V(g)$name %in% el[j,]), directed = FALSE)$width = 3
