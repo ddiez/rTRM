@@ -2,13 +2,14 @@
 writeTRMreport = function(graph, file, organism, target, query, sort.by = "symbol") {
 	x = V(graph)$name
   
-	smap = .getMapFromOrg(organism, "SYMBOL")
-	S = unlist(AnnotationDbi::mget(x, smap, ifnotfound = NA))
+  map=.getMapFromOrg(organism)
+  res=select(map,keys=x,columns=c("SYMBOL","GENENAME"))
+  
+  S=res$SYMBOL
 	S[is.na(S)] = ""
-	
-	dmap = .getMapFromOrg(organism, "GENENAME")
-	D = unlist(AnnotationDbi::mget(x, dmap, ifnotfound = NA))
-	D[is.na(D)] = ""
+  
+  D=res$GENENAME
+  D[is.na(D)] = ""
 	
 	grole = rep("bridge", length(x))
 	grole[x %in% query] = "enriched"

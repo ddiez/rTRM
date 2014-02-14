@@ -105,8 +105,9 @@ getMotifsFromEntrezgene = function(e, organism) {
 
 # get corresponding motifs from entrezgene symbol
 getMotifsFromSymbol = function(s, organism) {
-  map = .getMapFromOrg(organism, "ALIAS2EG")
-  e = unlist(AnnotationDbi::mget(s, map))
+  map=.getMapFromOrg(organism)
+  res=select(map,keys=s,columns="ENTREZID",keytype="ALIAS")
+  e=unique(na.omit(res$ENTREZID))
   
   o = getOrthologs(organism = organism)
   e_map = unique(o$entrezgene[o$map_entrezgene == e])

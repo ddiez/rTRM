@@ -1,1 +1,4 @@
+import(igraph,RSQLite)
+importMethodsFrom(AnnotationDbi,select)
+
 exportPattern("^[[:alpha:]]+")

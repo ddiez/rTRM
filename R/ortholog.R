@@ -15,10 +15,10 @@ initBiomart = function(filter, biomart = "ensembl", host) {
 }
 
 
-.getMapFromOrg = function(org, map = "SYMBOL") {
+.getMapFromOrg = function(org) {#, map = "SYMBOL") {
 	switch(org,
-		human = annotate::getAnnMap(map, "org.Hs.eg.db"),
-		mouse = annotate::getAnnMap(map, "org.Mm.eg.db")
+    human = get("org.Hs.eg.db"),
+    mouse = get("org.Mm.eg.db")
 	)
 }
 
@@ -35,8 +35,8 @@ getOrthologsFromBiomart = function(eg, target_org, mart) {
 	res = res[!is.na(res)]
 	res = unique(res[res != ""])
 	if(length(res) > 0) {
-		map = .getMapFromOrg(target_org, "ENSEMBL2EG")
-		res = unlist(AnnotationDbi::mget(res, map, ifnotfound = NA), use.names = FALSE)
-		unique(res[!is.na(res)])
+    map=.getMapFromOrg(target_org)
+    res=select(map,keys=res,columns="ENTREZID",keytype="ENSEMBL")
+		unique(na.omit(res$ENTREZID))
 	}
 }

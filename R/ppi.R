@@ -30,26 +30,6 @@ getBiogridData = function(release) {
   list(db = db, release = release, date = Sys.Date())
 }
 
-# getBiogridData = function(release) {
-# 	tmp = tempfile()
-# 	file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
-# 	url = paste("http://thebiogrid.org/downloads/archives/Release%20Archive/BIOGRID-", release, "/", file, ".zip", sep = "")
-# 	download.file(url, destfile = tmp)
-# 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
-# 	unlink(tmp)
-# 	list(db = db, release = release, date = Sys.Date())
-#}
-
-# getBiogridData = function(release) {
-# 	tmp = tempfile()
-# 	file = paste("BIOGRID-ALL-", release, ".tab2", sep = "")
-# 	url = paste("http://thebiogrid.org/downloads/archives/Release%20Archive/BIOGRID-", release, "/", file, ".zip", sep = "")
-# 	download.file(url, destfile = tmp)
-# 	db = read.delim(unz(tmp, paste(file, ".txt", sep = "")), check.names = FALSE, colClasses = "character")
-# 	unlink(tmp)
-# 	list(db = db, release = release, date = Sys.Date())
-#}
-
 processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physical", mimic.old = FALSE) {
   
   db = dblist$db
@@ -72,10 +52,11 @@ processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physic
 
   biogrid = graph.edgelist(dbtmp, directed = FALSE)
    
-  # add gene annotations
+  # add gene annotations  
   map = .getMapFromOrg(org)
-  sym = unlist(AnnotationDbi::mget(V(biogrid)$name, map, ifnotfound = NA))
-  sym[is.na(sym)] = paste("eg:", names(sym[is.na(sym)]), sep = "")
+  res = select(map, keys=V(biogrid)$name, columns="SYMBOL")
+  sym = res$SYMBOL
+  sym[is.na(sym)] = paste("eg:", res$ENTREZID[is.na(sym)], sep="")
   
   V(biogrid)$label = sym[V(biogrid)$name]
   
@@ -86,8 +67,6 @@ processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physic
   
   # create simplified graph.
   if (simplify) {
-    #E(biogrid)$biogrid_count <- count.multiple(biogrid)
-    #biogrid = simplify(biogrid)
     biogrid = igraph::simplify(biogrid,edge.attr.comb="concat")
     E(biogrid)$biogrid_count=sapply(E(biogrid)$pubmed_id,function(x) length(x))
   }
