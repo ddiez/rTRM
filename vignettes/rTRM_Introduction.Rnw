@@ -3,6 +3,7 @@
 %\VignetteKeywords{rTRM, TRM}
 %\VignetteDepends{rTRM}
 %\VignetteDepends{igraph}
+%\VignetteDepends{ggplot2}
 %\VignetteDepends{knitr}
 %\VignetteDepends{org.Mm.eg.db}
 %\VignetteDepends{MotifDb}
@@ -23,7 +24,7 @@ library(knitr)
 library(rTRM)
 library(org.Mm.eg.db)
 
-opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE)
+opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE, dev="tikz")
 options(replace.assign=TRUE,width = 80)
 knit_hooks$set(no.mar = function(before, options, envir) {
     if (before) par(mar = rep(0,4))  # no margins.
@@ -209,6 +210,7 @@ head(tfs_list_esc)
 @
 
 Next, we load the PPI network and filter out potential degree outliers and proteins not expressed in the paired expression data.
+
 <<>>=
 # load and process PPI data.
 biogrid_mm()
@@ -249,6 +251,7 @@ ecount(s)
 @
 
 Finally, we layout the network using a customized concentric layout and plot the network and the legend.
+
 <<fig.cap = "Sox2 specific TRM in ESCs.">>=
 # generate layout (order by cluster, then label)
 cl = getConcentricList(s, target, tfs_list_esc)
@@ -320,13 +323,23 @@ sox2_enr = motifEnrichment(sox2_seq_filter, pwms=pwm_logn, group.only=TRUE)
 load(system.file("extra/sox2_enr.rda", package = "rTRM"))
 @
 
-Next, retrieve the enriched motifs and obtain the Entrezgene ids. Then proceed with the same steps as in the Use Case example shown in the previous section. The resulting TRM looks very similar to the one in the Use Case. The main difference is the absence of Klf4 and the presence of Tcf7l1. A possibility could be that different matrices were used during the enrichment analysis since our approach uses compiled vertebrate PWMs that are mapped to the target species (Diez et al. NAR 2013). However in this case there is a mouse PWM for Klf4 in MotifDb. The reason for this discrepacy is in the different approaches used for motif enrichment. Whereas HOMER, which was used to obtain the list of enriched motifs in the Use Case, uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background, PWMEnrich uses 2000 bp upstream of the promoter of all genes in the genome. Generally, using different strategies for enrichment will tend to produce slightly different TRMs.
+Next, retrieve the enriched motifs by choosing an appropriate cutoff. Here a raw.score of > 5 is used. Then, using the annotations in the MotifDb dataset, we can obtain the Entrezgene ids associated with the enriched TF motifs.
 
-<<fig.cap="Sox2 TRM identified using PWMEnrich for the motif enrichment. In this TRM Klf4 is missing but Tcf7l1 is added to the list of enriched motifs">>=
-res = motifRankingForGroup(sox2_enr)
-res.gene = unique(values(MotifDb[names(res[res < 0.05])])$geneId)
+<<fig.cap="Density of log2(raw.score) for group. The selected cutoff is indicated with a red line.">>=
+res = groupReport(sox2_enr)
+plot(density(res$raw.score),main="",log="x")
+abline(v=log2(5),col="red")
+mtext(text="log2(5)",at=log2(5),side=3,cex=.8,col="red")
+
+#res.gene = unique(values(MotifDb[res$id[res$p.value < 0.05]])$geneId)
+res.gene = unique(values(MotifDb[res$id[res$raw.score > 5]])$geneId)
 res.gene = res.gene[!is.na(res.gene)]
 
+@
+
+Then proceed with the same steps as in the Use Case example shown in the previous section. The resulting TRM is similar (~85\% of edges shared) to the one in the Use Case, which used HOMER for motif enrichment. Differences may be to different approaches to determine the background. HOMER uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background. For PWMEnrich we generated a background using promoter sequences, defined as 2000 bp upstream of the transcription start site (TSS) of all genes in the genome. Generally, using different strategies for enrichment will tend to produce slightly different TRMs.
+
+<<fig.cap="Sox2 TRM identified using PWMEnrich for the motif enrichment.">>=
 data(biogrid_mm)
 ppi = biogrid_mm
 vcount(ppi)
@@ -356,6 +369,17 @@ cl = getConcentricList(sox2_trm, t=sox2.gene,e=res.gene)
 l = layout.concentric(sox2_trm, concentric=cl, order="label")
 plotTRM(sox2_trm, layout = l, vertex.cex = 15, label.cex = .8)
 plotTRMlegend(sox2_trm, title = "ESC Sox2 TRM", cex = .8)
+@
+
+We next compare the similarity between the TRM identified using motifs enriched as identified with HOMER and those identified with PWMEnrich. As shown in the heatmap, both methods return similar results.
+
+<<fig.cap="Similarity between the TRMs predicted using motif enrichment information from PWMEnrich and HOMER.">>=
+m=getSimilarityMatrix(list(PWMEnrich=sox2_trm,HOMER=s))
+m
+d=as.data.frame.table(m)
+g = ggplot(d, aes(x = Var1, y = Var2, fill = Freq))
+g + geom_tile(asp = 1) + scale_fill_gradient2(limit = c(0, 100), low = "white", mid = "darkblue", high = "orange", guide = guide_legend("\\% similarity", reverse=TRUE), midpoint = 50) + xlab(NULL) + ylab(NULL) + theme(aspect.ratio=1, axis.text.x=element_text(angle = 90, vjust = .5, hjust = 1))
+
 @
 
 \section{Ploting parameters}
