@@ -20,6 +20,7 @@
 \begin{document}
 
 <<include=FALSE, cache=FALSE>>=
+library(ggplot2)
 library(knitr)
 library(rTRM)
 library(org.Mm.eg.db)
