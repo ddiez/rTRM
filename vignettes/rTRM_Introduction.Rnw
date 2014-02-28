@@ -60,7 +60,7 @@ library(rTRM)
 load(system.file(package = "rTRM", "extra/example.rda"))
 
 # plot network
-plotGraph(g, vertex.cex = 5)
+plot(g)
 
 # define target and query nodes:
 target = "N6"
@@ -75,7 +75,7 @@ V(s)[ name %in% query]$color = "steelblue2"
 V(s)[ name %in% target]$color = "steelblue4"
 
 # plot:
-plotGraph(s, mar = 5, vertex.cex = 5)
+plot(s)
 @
 
 \section{Introduction to the rTRM package}

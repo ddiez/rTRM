@@ -8,12 +8,12 @@ Compute similarity matrix of list of graphs.
 This function computes pair-wise similarity based on common nodes (default) or edges between the graphs passed as a list.
 }
 \usage{
-getSimilarityMatrix(g_list, type = "nodes")
+getSimilarityMatrix(g_list, type = "edges")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{g_list}{list of graph objects.}
-  \item{type}{type of similarity, either node (default) or edge.}
+  \item{type}{type of similarity, either node or edge (default).}
 }
 \author{
 Diego Diez
