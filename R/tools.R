@@ -28,7 +28,7 @@ writeTRMreport = function(graph, file, organism, target, query, sort.by = "symbo
 	invisible(d)
 }
 # compare a list of graph all-against-all.
-getSimilarityMatrix = function(g_list, type = "nodes") {
+getSimilarityMatrix = function(g_list, type = "edges") {
 	type = match.arg(type, c("nodes", "edges"))
 	m = matrix(NA, nrow = length(g_list), ncol = length(g_list), dimnames = list(names(g_list), names(g_list)))
 	for(i in 1:length(g_list)) {
