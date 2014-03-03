@@ -25,7 +25,7 @@ library(knitr)
 library(rTRM)
 library(org.Mm.eg.db)
 
-opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE, dev="tikz")
+opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE)
 options(replace.assign=TRUE,width = 80)
 knit_hooks$set(no.mar = function(before, options, envir) {
     if (before) par(mar = rep(0,4))  # no margins.
@@ -60,7 +60,7 @@ library(rTRM)
 load(system.file(package = "rTRM", "extra/example.rda"))
 
 # plot network
-plot(g)
+plot(g,vertex.size=20,vertex.label.cex=.8,layout=layout.graphopt)
 
 # define target and query nodes:
 target = "N6"
@@ -75,7 +75,7 @@ V(s)[ name %in% query]$color = "steelblue2"
 V(s)[ name %in% target]$color = "steelblue4"
 
 # plot:
-plot(s)
+plot(s,vertex.size=20,vertex.label.cex=.8)
 @
 
 \section{Introduction to the rTRM package}
@@ -379,7 +379,7 @@ m=getSimilarityMatrix(list(PWMEnrich=sox2_trm,HOMER=s))
 m
 d=as.data.frame.table(m)
 g = ggplot(d, aes(x = Var1, y = Var2, fill = Freq))
-g + geom_tile(asp = 1) + scale_fill_gradient2(limit = c(0, 100), low = "white", mid = "darkblue", high = "orange", guide = guide_legend("\\% similarity", reverse=TRUE), midpoint = 50) + xlab(NULL) + ylab(NULL) + theme(aspect.ratio=1, axis.text.x=element_text(angle = 90, vjust = .5, hjust = 1))
+g + geom_tile(asp = 1) + scale_fill_gradient2(limit = c(0, 100), low = "white", mid = "darkblue", high = "orange", guide = guide_legend("similarity", reverse=TRUE), midpoint = 50) + xlab(NULL) + ylab(NULL) + theme(aspect.ratio=1, axis.text.x=element_text(angle = 90, vjust = .5, hjust = 1))
 
 @
 
