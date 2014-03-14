@@ -17,8 +17,12 @@ initBiomart = function(filter, biomart = "ensembl", host) {
 
 .getMapFromOrg = function(org) {#, map = "SYMBOL") {
 	switch(org,
-    human = get("org.Hs.eg.db"),
-    mouse = get("org.Mm.eg.db")
+    human = {
+      if(require(org.Hs.eg.db)) get("org.Hs.eg.db")
+    },
+    mouse = {
+      if(require(org.Mm.eg.db)) get("org.Mm.eg.db")
+    }
 	)
 }
 
