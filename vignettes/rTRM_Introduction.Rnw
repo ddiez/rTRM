@@ -50,9 +50,9 @@ Transcription factors (TFs) bind to short motifs in the DNA and regulate the exp
 
 \section{Minimal example}
 
-In this minimal example a fake network is search to identify TRMs focused around a target node, \textit{N6}, with query nodes being \textit{N7}, \textit{N12} and \textit{N28}. By default \textit{findTRM} find nodes separated a max distance of 0 (i.e. nodes directly connected). We change this with parameter \textit{max.bridge = 1}. Because node \textit{N28} is separated by two other nodes from the target node \textit{N6}, it is not included in the predicted TRM. By default findTRM() returns an object of class igraph, which can be used with plotTRM(), plotTRMlegend() and other rTRM functions. However it is possible to directly obtain a graphNEL object (from the Bioconductor package graph), setting the type argument to "graphNEL". Of course it is possible to also use the igraph.to.graphNEL() function in the igraph package to transform an igraph object into a graphNEL object.
+In this minimal example a dummy network is search to identify TRMs focused around a target node, \textit{N6}, with query nodes being \textit{N7}, \textit{N12} and \textit{N28}. By default \textit{findTRM} find nodes separated a max distance of 0 (i.e. nodes directly connected). We change this with parameter \textit{max.bridge = 1}. Because node \textit{N28} is separated by two other nodes from the target node \textit{N6}, it is not included in the predicted TRM. By default findTRM() returns an object of class igraph, which can be used with plotTRM(), plotTRMlegend() and other rTRM functions. However it is possible to directly obtain a graphNEL object (from the Bioconductor package graph), setting the type argument to "graphNEL". Of course it is possible to also use the igraph.to.graphNEL() function in the igraph package to transform an igraph object into a graphNEL object.
 
-<<fig.cap = "Identification of a TRM from a test network (left). In the resulting TRM (right) dark blue indicates the target node light blue are query nodes and white nodes are bridge nodes", no.mar = TRUE>>=
+<<fig.cap = "Identification of a TRM 1from a test network (left). In the resulting TRM (right) dark blue indicates the target node light blue are query nodes and white nodes are bridge nodes", no.mar = TRUE>>=
 # load the rTRM package
 library(rTRM)
 
@@ -174,11 +174,9 @@ Facilities will be added to automatically process the data from PSICQUIC to prod
 
 \section{Case study: TRM associated with Sox2 in embryonic stem cells (ESCs)}
 
-Sox2 is a TF involved in the determination and maintainance of pluripotency in embryonic stem cells (ESCs). It is known that Sox2 works together with Nanog and Pou5f1 (Oct4). Other TFs important are Erssb, and Klf4. In this case study we want to identify TRMs associated with Sox2. ChIP-seq data for Sox2 was obtained from Chen et al. (Cell 2008) \cite{chen2008} and motif enrichment analysis performed with HOMER \cite{heinz2010}, followed by matching against our library of PWMs using TOMTOM \cite{gupta2007}. The starting dataset is the TOMTOM output file with the motifs enriched in the Sox2 binding regions.
+Sox2 is a TF involved in the determination and maintainance of pluripotency in embryonic stem cells (ESCs). Sox2 forms a transcriptional regulatory module with Nanog and Pou5f1 (Oct4), and together determine ESCs phenotype. Other TFs important to this process are Erssb and Klf4. In this case study we want to identify TRMs associated with Sox2. ChIP-seq data for Sox2 was obtained from Chen et al. (Cell 2008) \cite{chen2008} and motif enrichment analysis performed with HOMER \cite{heinz2010}, followed by matching against our library of PWMs using TOMTOM \cite{gupta2007}. The starting dataset is the TOMTOM output file with the motifs enriched in the Sox2 binding regions.
 
 <<>>=
-#library(org.Mm.eg.db)
-
 # read motif enrichment results.
 motif_file = system.file("extra/sox2_motif_list.rda", package = "rTRM")
 load(motif_file)
@@ -222,7 +220,8 @@ ecount(ppi)
 
 # remove outliers.
 f = c("Ubc", "Sumo1", "Sumo2", "Sumo3")
-f = unlist(mget(f, revmap(org.Mm.egSYMBOL)))
+f=select(org.Mm.eg.db,keys=f,columns="ENTREZID",keytype="SYMBOL")$ENTREZID
+f
 ppi = removeVertices(ppi, f)
 vcount(ppi)
 ecount(ppi)
@@ -242,7 +241,7 @@ To identify TRMs we define a target TF (the one the ChIP-seq data comes from) an
 
 <<>>=
 # define target.
-target = unlist(mget("Sox2", org.Mm.egSYMBOL2EG))
+target = select(org.Mm.eg.db,keys="Sox2",columns="ENTREZID",keytype="SYMBOL")$ENTREZID
 target
 
 # find TRM.
@@ -347,7 +346,7 @@ vcount(ppi)
 ecount(ppi)
 
 f = c("Ubc", "Sumo1", "Sumo2", "Sumo3")
-f = unlist(mget(f, revmap(org.Mm.egSYMBOL)))
+f=select(org.Mm.eg.db,keys=f,columns="ENTREZID",keytype="SYMBOL")$ENTREZID
 ppi = removeVertices(ppi, f)
 vcount(ppi)
 ecount(ppi)
@@ -363,7 +362,7 @@ ppi_esc = getLargestComp(ppi_esc)
 vcount(ppi_esc)
 ecount(ppi_esc)
 
-sox2.gene = unlist(mget("Sox2", org.Mm.egSYMBOL2EG))
+sox2.gene = select(org.Mm.eg.db,keys="Sox2",columns="ENTREZID",keytype="SYMBOL")$ENTREZID
 sox2_trm = findTRM(ppi_esc, target=sox2.gene, query = res.gene)
 
 cl = getConcentricList(sox2_trm, t=sox2.gene,e=res.gene)
