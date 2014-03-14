@@ -56,6 +56,7 @@ processBiogrid = function(dblist, org = "human", simplify = TRUE, type = "physic
   map = .getMapFromOrg(org)
   res = select(map, keys=V(biogrid)$name, columns="SYMBOL")
   sym = res$SYMBOL
+  names(sym)=res$ENTREZID
   sym[is.na(sym)] = paste("eg:", res$ENTREZID[is.na(sym)], sep="")
   
   V(biogrid)$label = sym[V(biogrid)$name]
