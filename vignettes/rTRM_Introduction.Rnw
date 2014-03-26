@@ -8,7 +8,7 @@
 %\VignetteDepends{org.Mm.eg.db}
 %\VignetteDepends{MotifDb}
 %\VignetteDepends{PWMEnrich}
-%\VignetteDepends{BSgenome.Mmusculus.UCSC.mm8}
+%\VignetteDepends{BSgenome.Mmusculus.UCSC.mm8.masked}
 %\VignettePackage{rTRM}
 
 \documentclass{article}
@@ -271,7 +271,7 @@ The first step is to retrieve a set of PWMs. Here we will use the MotifDb packag
 
 <<>>=
 library(rTRM)
-library(BSgenome.Mmusculus.UCSC.mm8) # Sox2 peaks found against mm8
+library(BSgenome.Mmusculus.UCSC.mm8.masked) # Sox2 peaks found against mm8
 library(PWMEnrich)
 registerCoresPWMEnrich(1) # register number of cores for parallelization in PWMEnrich
 library(MotifDb)
@@ -327,14 +327,13 @@ Next, retrieve the enriched motifs by choosing an appropriate cutoff. Here a raw
 
 <<fig.cap="Density of log2(raw.score) for group. The selected cutoff is indicated with a red line.">>=
 res = groupReport(sox2_enr)
-plot(density(res$raw.score),main="",log="x")
+
+plot(density(res$raw.score),main="",log="x",xlab="log(raw.score)")
 abline(v=log2(5),col="red")
 mtext(text="log2(5)",at=log2(5),side=3,cex=.8,col="red")
 
-#res.gene = unique(values(MotifDb[res$id[res$p.value < 0.05]])$geneId)
 res.gene = unique(values(MotifDb[res$id[res$raw.score > 5]])$geneId)
-res.gene = res.gene[!is.na(res.gene)]
-
+res.gene = unique(na.omit(res.gene))
 @
 
 Then proceed with the same steps as in the Use Case example shown in the previous section. The resulting TRM is similar (~85\% of edges shared) to the one in the Use Case, which used HOMER for motif enrichment. Differences may be to different approaches to determine the background. HOMER uses random sets of sequences with similar composition to the ChIP-seq peaks provided to generate the background. For PWMEnrich we generated a background using promoter sequences, defined as 2000 bp upstream of the transcription start site (TSS) of all genes in the genome. Generally, using different strategies for enrichment will tend to produce slightly different TRMs.
