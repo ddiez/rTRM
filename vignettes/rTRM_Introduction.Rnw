@@ -132,9 +132,13 @@ data(biogrid_mm)
 The amount of available PPI data increases rapidly so it is desirable to have a way to access the newest data conveniently. rTRM includes support for direct download and processing of PPI data from the BioGRID database. The PPI network is stored as an \textit{igraph} object that can be readily used with rTRM or stored for later use. Below there is an example of the BioGRID database update procedure.
 
 <<eval = FALSE>>=
-# obtain dataset (currently need to state the version number explicitly, see
-# http://www.thebiogrid.org to identify the latest version:
-db = getBiogridData("3.2.96")
+# obtain dataset.
+db = getBiogridData() # retrieves latest release.
+# db = getBiogridData("3.2.96") # to get a specific release.
+
+# check release:
+db$release
+db$data
 
 # process PPI data for different organisms (currently supported human and mouse):
 biogrid_hs = processBiogrid(db, org = "human")

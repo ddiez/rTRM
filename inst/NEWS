@@ -1,6 +1,14 @@
 Package: rTRM
 =============
 
+Version: 1.2
+
+o An arbitrary number of targets can be specified in findTRM(). This allows to use the same list of TFs for target and query, in order to identify TRMs using information from predicted TFBS only.
+
+o BioGRID dataset updated to release 3.2.11 (April 2014)
+
+o getBiogridData() retrieves by default the latest BioGRID release (www.thebiogrid.org)
+
 Version: 1.0
 
 o First release in Bioconductor.
