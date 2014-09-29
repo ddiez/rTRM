@@ -1,6 +1,8 @@
 Package: rTRM
 =============
 
+Version: 1.4
+
 Version: 1.2
 
 o An arbitrary number of targets can be specified in findTRM(). This allows to use the same list of TFs for target and query, in order to identify TRMs using information from predicted TFBS only.
