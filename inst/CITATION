@@ -1,0 +1,19 @@
+citHeader("To cite rTRM in publications use:")
+
+citEntry(entry="Article",
+	title = "Systematic identification of transcriptional regulatory modules from protein-protein interaction networks",
+	author = personList(as.person("Diego Diez"),
+                      as.person("Andrew P. Hutchins"),
+                      as.person("Diego Miranda-Saavedra")),
+	year = "2014",
+	journal = "Nucleic Acids Research",
+	volume = "42",
+	number = "1",
+	pages = "e6-e6",
+	doi = "10.1093/nar/gkt913",
+	url = "",
+
+	textVersion =
+	  "Diego Diez, Andrew P. Hutchins and Diego Miranda-Saavedra. Systematic identification of transcriptional regulatory modules from protein-protein interaction networks. Nucleic Acids Research, 2014. 42 (1) e6.")
+
+citFooter("")
