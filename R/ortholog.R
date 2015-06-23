@@ -1,6 +1,6 @@
 # 
 initBiomart = function(filter, biomart = "ensembl", host) {
-	require(biomaRt)
+	requireNamespace("biomaRt")
 	if(missing(host)) host = "www.biomart.org"
 	
 	ds = list(
@@ -18,10 +18,10 @@ initBiomart = function(filter, biomart = "ensembl", host) {
 .getMapFromOrg = function(org) {#, map = "SYMBOL") {
 	switch(org,
     human = {
-      if(require(org.Hs.eg.db)) get("org.Hs.eg.db")
+      if(requireNamespace("org.Hs.eg.db")) get("org.Hs.eg.db")
     },
     mouse = {
-      if(require(org.Mm.eg.db)) get("org.Mm.eg.db")
+      if(requireNamespace("org.Mm.eg.db")) get("org.Mm.eg.db")
     }
 	)
 }
