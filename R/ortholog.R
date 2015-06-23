@@ -11,7 +11,7 @@ initBiomart = function(filter, biomart = "ensembl", host) {
 	if(! missing(filter))
 		ds = ds[filter]
 		
-	lapply(ds, function(d) useMart(biomart = biomart, dataset = d, host = host))
+	lapply(ds, function(d) biomaRt::useMart(biomart = biomart, dataset = d, host = host))
 }
 
 
@@ -34,7 +34,7 @@ getOrthologsFromBiomart = function(eg, target_org, mart) {
 	)
 	query = "ensembl_gene_id"
 	query = c(query, sapply(org[[target_org]], function(x) paste(x, c("ensembl_gene"), sep = "_")))
-	res = getBM(query, filters = "entrezgene", values = eg, mart = mart)
+	res = biomaRt::getBM(query, filters = "entrezgene", values = eg, mart = mart)
 	res = res[,2]
 	res = res[!is.na(res)]
 	res = unique(res[res != ""])
