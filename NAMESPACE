@@ -1,15 +1,12 @@
-import(igraph,RSQLite)
-importMethodsFrom(AnnotationDbi,select)
+import(igraph, RSQLite)
+
+importMethodsFrom(AnnotationDbi,
+                  "select"
+)
 
 importMethodsFrom(DBI,
                   "dbDriver",
                   "fetch"
-)
-
-importMethodsFrom(biomaRt,
-                  "getBM",
-                  "getSeq",
-                  "useMart"
 )
 
 exportPattern("^[[:alpha:]]+")

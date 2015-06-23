@@ -72,7 +72,8 @@ getSimilarityMatrix = function(g_list, type = "edges") {
 }
 
 getSequencesFromGenome = function(BED, genome, append.id) {
-  s = getSeq(genome, names = BED$chr, start = BED$start, end = BED$end)
+  requireNamespace("Biostrings")
+  s = Biostrings::getSeq(genome, names = BED$chr, start = BED$start, end = BED$end)
   sn = paste(ifelse(!missing(append.id), append.id, ""), BED$chr, BED$start, BED$end, sep = "_")
   names(s) = sn
   s
