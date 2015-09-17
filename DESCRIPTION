@@ -18,3 +18,4 @@ LazyLoad: yes
 ByteCompile: yes
 VignetteBuilder: knitr
 biocViews: Transcription, Network, GeneRegulation, GraphAndNetwork
+URL: https://github.com/ddiez/rTRM
