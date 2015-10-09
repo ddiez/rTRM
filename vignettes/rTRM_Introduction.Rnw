@@ -26,7 +26,7 @@ library(rTRM)
 library(org.Mm.eg.db)
 
 opts_chunk$set(fig.align = 'center', fig.width = 3, fig.height = 3, fig.show = 'hold', tidy = TRUE, comment = "", highlight = FALSE, prompt = TRUE)
-options(replace.assign=TRUE,width = 80)
+#options(replace.assign=TRUE,width = 80)
 knit_hooks$set(no.mar = function(before, options, envir) {
     if (before) par(mar = rep(0,4))  # no margins.
 })
